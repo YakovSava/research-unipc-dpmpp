@@ -1,0 +1,17 @@
+[project]
+name = "research-unipc-dpmpp"
+version = "1.0.0"
+description = "Flow-WLS and DPM++ Extended Samplers for ComfyUI"
+readme = "README.md"
+license = { text = "CC-BY-4.0" }
+authors = [{ name = "Iakov Savelev" }]
+dependencies = [
+    "numpy",
+    "scipy",
+    "torch"
+]
+
+[tool.comfy]
+PublisherId = "yakovsava"
+DisplayName = "Flow-WLS & DPM++ Extended Samplers"
+Icon = ""
