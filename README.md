@@ -1,5 +1,9 @@
 # Regularized Multistep Integration for Accelerated Sampling of Flow Matching Generative Models (Flow-WLS)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23337579.svg)](https://doi.org/10.5281/zenodo.23337579)
+
+[English](README.md) | [Русский](README_ru.md) | [中文](README_zh.md)
+
 ## Abstract
 Numerical reverse-time integration in diffusion and Flow Matching models is constrained by a dilemma: low-order methods (1–2) require a large number of steps (30+ NFE) to prevent blurring, while classical explicit high-order multistep schemes ($p \ge 4$) suffer from Adams-Bashforth instability, Runge's phenomenon, and the amplification of stochastic noise. This work investigates the collapse mechanism of multistep samplers in continuous flow models (Anima DiT / Cosmos) and proposes the **Flow-WLS (Weighted Least Squares / Savitzky-Golay Multistep)** method. By constraining the approximation degree to a smooth parabola ($d=2$) and minimizing the weighted residual over an extended history of steps ($L=3..8$), Flow-WLS reverses the classical curse of multistep methods: increasing memory depth leads to noise filtering rather than error accumulation. Experiments confirm a strictly monotonic increase in quality metrics (SSIM from 0.745 to 0.800 at 10 steps) with a generation time of 11 seconds on a consumer GPU.
 
@@ -83,3 +87,28 @@ Experiments were conducted on the **Anima DiT** model (`anima_aestheticV11`) wit
    It is proven that for generative flows, what is beneficial is not a high polynomial degree (which destroys stability), but rather a **deep retrospective sampling history paired with a low-degree approximator**.
 3. **Inadmissibility of Naive Stochasticity in Flow Matching**:
    It is demonstrated why injecting Brownian noise breaks the finite-difference curvature predictors of CAB (amplifying noise by $6\times$ per step), confirming the advantage of deterministic integration for rectified flow models.
+
+---
+
+## References
+
+1. **DPM-Solver**: Lu, C., Zhou, Y., Bao, F., Chen, J., Li, C., & Zhu, J. (2022). *DPM-Solver: A Fast ODE Solver for Diffusion Probabilistic Models in Around 10 Steps*. Advances in Neural Information Processing Systems (NeurIPS 2022). [arXiv:2206.00927](https://arxiv.org/abs/2206.00927)
+2. **DPM-Solver++**: Lu, C., Zhou, Y., Bao, F., Chen, J., Li, C., & Zhu, J. (2022). *DPM-Solver++: Fast Solver for Guided Sampling of Diffusion Probabilistic Models*. [arXiv:2211.01095](https://arxiv.org/abs/2211.01095)
+3. **UniPC**: Zhao, W., Bai, L., Rao, Y., Zhou, J., & Lu, J. (2023). *UniPC: A Unified Predictor-Corrector Framework for Fast Sampling of Diffusion Models*. Advances in Neural Information Processing Systems (NeurIPS 2023). [arXiv:2303.01872](https://arxiv.org/abs/2303.01872)
+4. **CAB**: Roy, A., & Nair, P. (2026). *CAB: Accelerating Flow and Diffusion Sampling via Rectification and Corrected Adams-Bashforth*. [arXiv:2605.16736](https://arxiv.org/abs/2605.16736)
+5. **EDM**: Karras, T., Aittala, M., Aila, T., & Laine, S. (2022). *Elucidating the Design Space of Diffusion-Based Generative Models*. Advances in Neural Information Processing Systems (NeurIPS 2022). [arXiv:2206.00364](https://arxiv.org/abs/2206.00364)
+6. **Flow Matching**: Lipman, Y., Chen, R. T., Ben-Hamu, H., Nicklas, M., & Le, M. (2022). *Flow Matching for Generative Modeling*. International Conference on Learning Representations (ICLR 2023). [arXiv:2210.02747](https://arxiv.org/abs/2210.02747)
+
+---
+
+## Citation
+
+```bibtex
+@article{savelev2026flowwls,
+  title={Flow-WLS: Regularized Multistep Integration for Accelerated Sampling of Flow Matching Generative Models},
+  author={Savel'ev, Jacob},
+  year={2026},
+  doi={10.5281/zenodo.23337579},
+  url={https://doi.org/10.5281/zenodo.23337579}
+}
+```

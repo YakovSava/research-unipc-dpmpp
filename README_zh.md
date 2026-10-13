@@ -1,5 +1,9 @@
 # 用于流匹配生成模型加速采样的正则化多步积分法 (Flow-WLS)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23337579.svg)](https://doi.org/10.5281/zenodo.23337579)
+
+[English](README.md) | [Русский](README_ru.md) | [中文](README_zh.md)
+
 ## 摘要 (Abstract)
 扩散模型和流匹配（Flow Matching）模型中的反向时间数值积分面临着一个两难境地：低阶方法（1-2阶）需要大量步数（30+ NFE）以避免模糊，而经典的高阶显式多步格式（$p \ge 4$）则受到亚当斯-巴什福斯（Adams-Bashforth）不稳定性、龙格现象振荡以及随机噪声放大的困扰。本文研究了连续流模型（Anima DiT / Cosmos）上多步采样器的崩塌机制，并提出了 **Flow-WLS（加权最小二乘法 / 萨维茨基-戈雷多步法，Weighted Least Squares / Savitzky-Golay Multistep）**。通过将近似阶数限制为平滑抛物线（$d=2$），并在扩展的历史步长（$L=3..8$）上最小化加权残差，Flow-WLS 逆转了多步法的经典缺陷：增加记忆深度不仅不会导致误差累积，反而能够滤除噪声。实验证明，在消费级 GPU 上仅需 11 秒生成时间的条件下，质量指标呈现严格单调递增（在 10 步下 SSIM 从 0.745 提升至 0.800）。
 
@@ -83,3 +87,28 @@ $$\min_{c} \sum_{k=0}^{L-1} \gamma^k \left( c_0 + c_1 s_k + c_2 s_k^2 - v_k \rig
    研究证明，对生成流模型有益的不是高阶多项式（这会破坏稳定性），而是**在低近似阶数下的高深度回顾采样**。
 3. **朴素随机性在流匹配中的不适用性**：
    揭示了注入布朗噪声破坏 CAB 有限差分曲率预测器（单步噪声放大 6 倍）的原因，并证实了整流模型确定性积分的优越性。
+
+---
+
+## 参考文献 (References)
+
+1. **DPM-Solver**: Lu, C., Zhou, Y., Bao, F., Chen, J., Li, C., & Zhu, J. (2022). *DPM-Solver: A Fast ODE Solver for Diffusion Probabilistic Models in Around 10 Steps*. Advances in Neural Information Processing Systems (NeurIPS 2022). [arXiv:2206.00927](https://arxiv.org/abs/2206.00927)
+2. **DPM-Solver++**: Lu, C., Zhou, Y., Bao, F., Chen, J., Li, C., & Zhu, J. (2022). *DPM-Solver++: Fast Solver for Guided Sampling of Diffusion Probabilistic Models*. [arXiv:2211.01095](https://arxiv.org/abs/2211.01095)
+3. **UniPC**: Zhao, W., Bai, L., Rao, Y., Zhou, J., & Lu, J. (2023). *UniPC: A Unified Predictor-Corrector Framework for Fast Sampling of Diffusion Models*. Advances in Neural Information Processing Systems (NeurIPS 2023). [arXiv:2303.01872](https://arxiv.org/abs/2303.01872)
+4. **CAB**: Roy, A., & Nair, P. (2026). *CAB: Accelerating Flow and Diffusion Sampling via Rectification and Corrected Adams-Bashforth*. [arXiv:2605.16736](https://arxiv.org/abs/2605.16736)
+5. **EDM**: Karras, T., Aittala, M., Aila, T., & Laine, S. (2022). *Elucidating the Design Space of Diffusion-Based Generative Models*. Advances in Neural Information Processing Systems (NeurIPS 2022). [arXiv:2206.00364](https://arxiv.org/abs/2206.00364)
+6. **Flow Matching**: Lipman, Y., Chen, R. T., Ben-Hamu, H., Nicklas, M., & Le, M. (2022). *Flow Matching for Generative Modeling*. International Conference on Learning Representations (ICLR 2023). [arXiv:2210.02747](https://arxiv.org/abs/2210.02747)
+
+---
+
+## 引用 (Citation)
+
+```bibtex
+@article{savelev2026flowwls,
+  title={Flow-WLS: Regularized Multistep Integration for Accelerated Sampling of Flow Matching Generative Models},
+  author={Savel'ev, Jacob},
+  year={2026},
+  doi={10.5281/zenodo.23337579},
+  url={https://doi.org/10.5281/zenodo.23337579}
+}
+```
