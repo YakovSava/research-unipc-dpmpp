@@ -73,6 +73,7 @@ solution before trusting order 4+ output on real image generation.
 import functools
 import math
 from typing import Any, Callable
+import numpy as np
 import torch
 from tqdm.auto import trange
 
@@ -443,6 +444,142 @@ def sample_cab(
     return x
 
 
+def compute_wls_weights(
+    dt: float,
+    past_dts: list[float],
+    deg: int = 2,
+    gamma: float = 0.85,
+) -> list[float]:
+    length: int = 1 + len(past_dts)
+    if length <= deg + 1:
+        d: int = length - 1
+    else:
+        d = deg
+    nodes: list[float] = [0.0]
+    acc: float = 0.0
+    for h in past_dts:
+        acc -= h
+        nodes.append(acc)
+    nodes_arr: np.ndarray = np.array(nodes)
+    w_diag: np.ndarray = np.array([gamma**k for k in range(length)])
+    weight_mat: np.ndarray = np.diag(w_diag)
+    design_mat: np.ndarray = np.column_stack([nodes_arr**m for m in range(d + 1)])
+    normal_mat: np.ndarray = design_mat.T @ weight_mat @ design_mat
+    inv_mat: np.ndarray = np.linalg.pinv(normal_mat)
+    projection_mat: np.ndarray = inv_mat @ design_mat.T @ weight_mat
+    integral_vec: np.ndarray = np.array(
+        [(dt ** (m + 1)) / (m + 1) for m in range(d + 1)]
+    )
+    effective_weights: np.ndarray = integral_vec @ projection_mat
+    return [float(v) for v in effective_weights]
+
+
+@torch.no_grad()
+def sample_flow_wls(
+    model: Any,
+    x: torch.Tensor,
+    sigmas: torch.Tensor,
+    extra_args: dict[str, Any] | None = None,
+    callback: Callable[..., Any] | None = None,
+    disable: bool | None = None,
+    history_length: int = 6,
+    deg: int = 2,
+    gamma: float = 0.85,
+) -> torch.Tensor:
+    if len(sigmas) <= 1:
+        return x
+
+    extra_args = {} if extra_args is None else extra_args
+    s_in: torch.Tensor = x.new_ones([x.shape[0]])
+    total_steps: int = len(sigmas) - 1
+    v_hist: list[torch.Tensor] = []
+    dt_hist: list[float] = []
+
+    for i in trange(total_steps, disable=disable):
+        denoised: torch.Tensor = model(x, sigmas[i] * s_in, **extra_args)
+        if callback is not None:
+            callback({"x": x, "i": i, "sigma": sigmas[i], "sigma_hat": sigmas[i], "denoised": denoised})
+
+        if sigmas[i + 1] == 0:
+            x = denoised
+            break
+
+        s_cur: float = float(sigmas[i].item())
+        s_next: float = float(sigmas[i + 1].item())
+        dt: float = s_next - s_cur
+
+        v_cur: torch.Tensor = (x - denoised) / max(s_cur, 1e-4)
+        past_to_keep: list[float] = dt_hist[::-1][: history_length - 1]
+        w: list[float] = compute_wls_weights(dt, past_to_keep, deg=deg, gamma=gamma)
+        vals: list[torch.Tensor] = [v_cur] + v_hist[::-1][: len(w) - 1]
+
+        inc: torch.Tensor = torch.zeros_like(x)
+        for wk, vk in zip(w, vals):
+            inc = inc + wk * vk
+        x = x + inc
+
+        v_hist.append(v_cur)
+        dt_hist.append(dt)
+
+    return x
+
+
+@torch.no_grad()
+def sample_flow_unipc(
+    model: Any,
+    x: torch.Tensor,
+    sigmas: torch.Tensor,
+    extra_args: dict[str, Any] | None = None,
+    callback: Callable[..., Any] | None = None,
+    disable: bool | None = None,
+    order: int = 2,
+) -> torch.Tensor:
+    if len(sigmas) <= 1:
+        return x
+
+    extra_args = {} if extra_args is None else extra_args
+    s_in: torch.Tensor = x.new_ones([x.shape[0]])
+    total_steps: int = len(sigmas) - 1
+    v_hist: list[torch.Tensor] = []
+    dt_hist: list[float] = []
+    last_x: torch.Tensor | None = None
+
+    for i in trange(total_steps, disable=disable):
+        denoised: torch.Tensor = model(x, sigmas[i] * s_in, **extra_args)
+        if callback is not None:
+            callback({"x": x, "i": i, "sigma": sigmas[i], "sigma_hat": sigmas[i], "denoised": denoised})
+
+        if sigmas[i + 1] == 0:
+            x = denoised
+            break
+
+        s_cur: float = float(sigmas[i].item())
+        s_next: float = float(sigmas[i + 1].item())
+        dt: float = s_next - s_cur
+
+        v_cur: torch.Tensor = (x - denoised) / max(s_cur, 1e-4)
+
+        if last_x is not None:
+            dt_prev: float = dt_hist[-1]
+            x = last_x + dt_prev * (0.5 * v_cur + 0.5 * v_hist[-1])
+
+        last_x = x.clone()
+
+        curr_p: int = min(order, 1 + len(v_hist))
+        w: list[float] = compute_ab_weights(dt, dt_hist[::-1], curr_p)
+        vals: list[torch.Tensor] = [v_cur] + v_hist[::-1][: curr_p - 1]
+
+        x_pred: torch.Tensor = x
+        for wk, vk in zip(w, vals):
+            x_pred = x_pred + wk * vk
+
+        v_hist.append(v_cur)
+        dt_hist.append(dt)
+        x = x_pred
+
+    return x
+
+
 SAMPLER_FUNCS = {}
 
 for _n in range(1, 9):
@@ -481,3 +618,15 @@ for _ord in range(2, 7):
     SAMPLER_FUNCS[f"cab_{_ord}"] = functools.partial(
         sample_cab, order=_ord, theta=0.2, eta=0.0
     )
+
+for _l in [3, 4, 5, 6, 8]:
+    SAMPLER_FUNCS[f"flow_wls_{_l}"] = functools.partial(
+        sample_flow_wls, history_length=_l, deg=2, gamma=0.85
+    )
+
+SAMPLER_FUNCS["flow_unipc_2"] = functools.partial(
+    sample_flow_unipc, order=2
+)
+SAMPLER_FUNCS["flow_unipc_3"] = functools.partial(
+    sample_flow_unipc, order=3
+)
