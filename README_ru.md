@@ -83,3 +83,28 @@ $$\min_{c} \sum_{k=0}^{L-1} \gamma^k \left( c_0 + c_1 s_k + c_2 s_k^2 - v_k \rig
    Доказано, что для генеративных потоков полезна не высокая степень полинома (которая убивает устойчивость), а **высокая глубина ретроспективной выборки при низкой степени аппроксиматора**.
 3. **Непригодность наивной стохастичности в Flow Matching**:
    Показано, почему инжекция броуновского шума ломает конечно-разностные предикаторы кривизны CAB (умножение шума в 6 раз на шаг), и подтверждено преимущество детерминированного интегрирования для моделей выпрямленного потока.
+
+---
+
+## Ссылки / Литература (References)
+
+1. **DPM-Solver**: Lu, C., Zhou, Y., Bao, F., Chen, J., Li, C., & Zhu, J. (2022). *DPM-Solver: A Fast ODE Solver for Diffusion Probabilistic Models in Around 10 Steps*. Advances in Neural Information Processing Systems (NeurIPS 2022). [arXiv:2206.00927](https://arxiv.org/abs/2206.00927)
+2. **DPM-Solver++**: Lu, C., Zhou, Y., Bao, F., Chen, J., Li, C., & Zhu, J. (2022). *DPM-Solver++: Fast Solver for Guided Sampling of Diffusion Probabilistic Models*. [arXiv:2211.01095](https://arxiv.org/abs/2211.01095)
+3. **UniPC**: Zhao, W., Bai, L., Rao, Y., Zhou, J., & Lu, J. (2023). *UniPC: A Unified Predictor-Corrector Framework for Fast Sampling of Diffusion Models*. Advances in Neural Information Processing Systems (NeurIPS 2023). [arXiv:2303.01872](https://arxiv.org/abs/2303.01872)
+4. **CAB**: Roy, A., & Nair, P. (2026). *CAB: Accelerating Flow and Diffusion Sampling via Rectification and Corrected Adams-Bashforth*. [arXiv:2605.16736](https://arxiv.org/abs/2605.16736)
+5. **EDM**: Karras, T., Aittala, M., Aila, T., & Laine, S. (2022). *Elucidating the Design Space of Diffusion-Based Generative Models*. Advances in Neural Information Processing Systems (NeurIPS 2022). [arXiv:2206.00364](https://arxiv.org/abs/2206.00364)
+6. **Flow Matching**: Lipman, Y., Chen, R. T., Ben-Hamu, H., Nicklas, M., & Le, M. (2022). *Flow Matching for Generative Modeling*. International Conference on Learning Representations (ICLR 2023). [arXiv:2210.02747](https://arxiv.org/abs/2210.02747)
+
+---
+
+## Цитирование (Citation)
+
+```bibtex
+@article{savelev2026flowwls,
+  title={Flow-WLS: Regularized Multistep Integration for Accelerated Sampling of Flow Matching Generative Models},
+  author={Savelev, Iakov},
+  year={2026},
+  doi={10.5281/zenodo.23337579},
+  url={https://doi.org/10.5281/zenodo.23337579}
+}
+```

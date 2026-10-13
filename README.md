@@ -106,7 +106,7 @@ Experiments were conducted on the **Anima DiT** model (`anima_aestheticV11`) wit
 ```bibtex
 @article{savelev2026flowwls,
   title={Flow-WLS: Regularized Multistep Integration for Accelerated Sampling of Flow Matching Generative Models},
-  author={Savel'ev, Jacob},
+  author={Savelev, Iakov},
   year={2026},
   doi={10.5281/zenodo.23337579},
   url={https://doi.org/10.5281/zenodo.23337579}
